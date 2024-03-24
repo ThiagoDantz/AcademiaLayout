@@ -1,0 +1,51 @@
+IsValidCPF PROCEDURE(SIGNED,STRING),BOOL
+CODE
+    MAP
+    END
+
+    ! Remove qualquer caractere que não seja número do CPF
+    cpfString = FUNCTION Trim(STRING(cpf))
+    cpfString = REPLACE('.', '', cpfString)
+    cpfString = REPLACE('-', '', cpfString)
+
+    ! Verifica se o CPF tem 11 dígitos
+    IF LEN(cpfString) <> 11
+        RETURN FALSE
+    END
+
+    ! Verifica se todos os dígitos são iguais
+    IF cpfString = '00000000000' OR cpfString = '11111111111' OR cpfString = '22222222222' OR cpfString = '33333333333' OR cpfString = '44444444444' OR cpfString = '55555555555' OR cpfString = '66666666666' OR cpfString = '77777777777' OR cpfString = '88888888888' OR cpfString = '99999999999'
+        RETURN FALSE
+    END
+
+    ! Calcula o primeiro dígito verificador
+    total = 0
+    FOR i = 1 TO 9
+        total += VAL(cpfString[MATCH(i,'123456789')])
+            * (11 - i)
+    END
+    IF MOD(total, 11) < 2
+        d1 = 0
+    ELSE
+        d1 = 11 - MOD(total, 11)
+    END
+
+    ! Calcula o segundo dígito verificador
+    total = 0
+    FOR i = 1 TO 10
+        total += VAL(cpfString[MATCH(i,'123456789')])
+            * (12 - i)
+    END
+    total += d1 * 2
+    IF MOD(total, 11) < 2
+        d2 = 0
+    ELSE
+        d2 = 11 - MOD(total, 11)
+    END
+
+    ! Verifica se os dígitos calculados são iguais aos dígitos informados
+    IF VAL(cpfString[10]) = d1 AND VAL(cpfString[11]) = d2
+        RETURN TRUE
+    ELSE
+        RETURN FALSE
+    END
