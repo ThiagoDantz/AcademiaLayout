@@ -1,0 +1,16 @@
+SELECT os1.id AS id_validacao,
+       os1.numero,
+       os1.fase AS fase_validacao,
+       os1.data AS data_validacao,
+       os1.hora AS hora_validacao,
+       CASE
+           WHEN EXISTS (
+               SELECT 1
+               FROM ordem_servico os2
+               WHERE os2.numero = os1.numero
+                 AND os2.fase = 'N'
+           ) THEN 'Aprovado'
+           ELSE 'Reprovado'
+       END AS status
+FROM ordem_servico os1
+WHERE os1.fase = 'V';
