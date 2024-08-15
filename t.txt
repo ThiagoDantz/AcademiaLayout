@@ -1,0 +1,70 @@
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="SeuNamespace.Default" %>
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Formulário de Entrada de Número</title>
+    <script type="text/javascript">
+        function validarNumeros(e) {
+            var tecla = e.key;
+            var codigoTecla = e.which || e.keyCode;
+            if (codigoTecla < 48 || codigoTecla > 57) { // Verifica se a tecla pressionada não é um número
+                e.preventDefault();
+            }
+        }
+    </script>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <asp:TextBox ID="txtNumero" runat="server" onkeypress="validarNumeros(event)" />
+            <asp:Button ID="btnSalvar" runat="server" Text="Salvar" OnClick="btnSalvar_Click" />
+        </div>
+    </form>
+</body>
+</html>
+
+
+---------------------------------------------------------------------------------------------------
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
+
+namespace SeuNamespace
+{
+    public partial class Default : System.Web.UI.Page
+    {
+        protected void btnSalvar_Click(object sender, EventArgs e)
+        {
+            // Recupera o valor do TextBox
+            string numero = txtNumero.Text;
+
+            // Chama a procedure no SQL Server
+            SalvarNoBanco(numero);
+        }
+
+        private void SalvarNoBanco(string numero)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["SuaConexao"].ConnectionString;
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("SuaProcedure", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Adiciona o parâmetro da procedure
+                    cmd.Parameters.Add(new SqlParameter("@Numero", numero));
+
+                    // Abre a conexão e executa a procedure
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+    }
+}
+
+----------------------------------------------------------------------------
