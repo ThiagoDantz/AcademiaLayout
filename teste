@@ -68,3 +68,35 @@ namespace SeuNamespace
 }
 
 ----------------------------------------------------------------------------
+<asp:ListView ID="ListView1" runat="server">
+    <ItemTemplate>
+        <asp:TextBox ID="TextBox1" runat="server" />
+        <asp:Button ID="Button1" runat="server" Text="Salvar" CommandName="Save" CommandArgument='<%# Container.DisplayIndex %>' />
+    </ItemTemplate>
+</asp:ListView>
+
+______________________________________
+protected void ListView1_ItemCommand(object sender, ListViewCommandEventArgs e)
+{
+    if (e.CommandName == "Save")
+    {
+        // Encontre o índice do item
+        int index = Convert.ToInt32(e.CommandArgument);
+
+        // Encontre o item correspondente
+        ListViewItem item = ListView1.Items[index];
+
+        // Encontre a TextBox dentro desse item
+        TextBox txt = (TextBox)item.FindControl("TextBox1");
+
+        if (txt != null)
+        {
+            // Capture o texto digitado
+            string textoDigitado = txt.Text;
+
+            // Agora você pode usar o valor capturado
+            // Exemplo: salvar no banco de dados, mostrar na tela, etc.
+            Response.Write("Valor capturado: " + textoDigitado);
+        }
+    }
+}
