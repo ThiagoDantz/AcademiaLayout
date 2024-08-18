@@ -1,102 +1,104 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="SeuNamespace.Default" %>
-
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head runat="server">
-    <title>Formulário de Entrada de Número</title>
-    <script type="text/javascript">
-        function validarNumeros(e) {
-            var tecla = e.key;
-            var codigoTecla = e.which || e.keyCode;
-            if (codigoTecla < 48 || codigoTecla > 57) { // Verifica se a tecla pressionada não é um número
-                e.preventDefault();
-            }
-        }
-    </script>
+    <title>Exemplo ListView com Dados Iniciais</title>
 </head>
 <body>
     <form id="form1" runat="server">
         <div>
-            <asp:TextBox ID="txtNumero" runat="server" onkeypress="validarNumeros(event)" />
-            <asp:Button ID="btnSalvar" runat="server" Text="Salvar" OnClick="btnSalvar_Click" />
+            <asp:ListView ID="lvItems" runat="server" OnItemCommand="lvItems_ItemCommand">
+                <ItemTemplate>
+                    <div>
+                        <asp:TextBox ID="txtInput" runat="server" Text='<%# Bind("InputValue") %>' />
+                        <asp:Button ID="btnSalvar" runat="server" Text="Salvar" CommandName="Salvar" CommandArgument='<%# Container.DataItemIndex %>' />
+                    </div>
+                </ItemTemplate>
+            </asp:ListView>
         </div>
     </form>
 </body>
 </html>
 
 
----------------------------------------------------------------------------------------------------
+<!DOCTYPE html>: Declara o tipo de documento como HTML5.
+<html>: Inicia o documento HTML.
+<head runat="server">: Cabeçalho da página, runat="server" permite que o cabeçalho seja manipulado no código-behind.
+<title>Exemplo ListView com Dados Iniciais</title>: Define o título da página exibido na aba do navegador.
+<body>: Início do corpo do documento HTML.
+<form id="form1" runat="server">: Formulário ASP.NET com runat="server" para permitir manipulação do lado do servidor.
+<div>: Contêiner para elementos de layout.
+<asp:ListView ID="lvItems" runat="server" OnItemCommand="lvItems_ItemCommand">: Controle ListView com ID lvItems que permite exibir e gerenciar uma lista de itens. OnItemCommand especifica o método que lida com comandos de item, como cliques de botão.
+<ItemTemplate>: Define o template para os itens exibidos no ListView.
+<div>: Contêiner para os controles dentro de cada item.
+<asp:TextBox ID="txtInput" runat="server" Text='<%# Bind("InputValue") %>' />: TextBox para entrada de texto. O valor do TextBox é vinculado à propriedade InputValue da fonte de dados.
+<asp:Button ID="btnSalvar" runat="server" Text="Salvar" CommandName="Salvar" CommandArgument='<%# Container.DataItemIndex %>' />: Botão que aciona um comando. CommandName é definido como "Salvar" e CommandArgument passa o índice do item atual no ListView.
+
 
 using System;
-using System.Data;
-using System.Data.SqlClient;
-using System.Configuration;
+using System.Collections.Generic;
+using System.Web.UI;
 
-namespace SeuNamespace
+public partial class Default : Page
 {
-    public partial class Default : System.Web.UI.Page
+    protected void Page_Load(object sender, EventArgs e)
     {
-        protected void btnSalvar_Click(object sender, EventArgs e)
+        if (!IsPostBack)
         {
-            // Recupera o valor do TextBox
-            string numero = txtNumero.Text;
-
-            // Chama a procedure no SQL Server
-            SalvarNoBanco(numero);
-        }
-
-        private void SalvarNoBanco(string numero)
-        {
-            string connectionString = ConfigurationManager.ConnectionStrings["SuaConexao"].ConnectionString;
-
-            using (SqlConnection con = new SqlConnection(connectionString))
+            var items = new List<ItemData>
             {
-                using (SqlCommand cmd = new SqlCommand("SuaProcedure", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
+                new ItemData("Valor Inicial 1"),
+                new ItemData("Valor Inicial 2"),
+                new ItemData("Valor Inicial 3")
+            };
 
-                    // Adiciona o parâmetro da procedure
-                    cmd.Parameters.Add(new SqlParameter("@Numero", numero));
+            lvItems.DataSource = items;
+            lvItems.DataBind();
+        }
+    }
 
-                    // Abre a conexão e executa a procedure
-                    con.Open();
-                    cmd.ExecuteNonQuery();
-                }
+    protected void lvItems_ItemCommand(object sender, ListViewCommandEventArgs e)
+    {
+        if (e.CommandName == "Salvar")
+        {
+            TextBox txtInput = (TextBox)e.Item.FindControl("txtInput");
+
+            if (txtInput != null)
+            {
+                string valorInput = txtInput.Text;
+
+                Response.Write($"Valor obtido do item {e.CommandArgument}: {valorInput}<br>");
             }
         }
     }
 }
+using System;: Importa o namespace básico do .NET, incluindo tipos primitivos e funcionalidades comuns.
 
-----------------------------------------------------------------------------
-<asp:ListView ID="ListView1" runat="server">
-    <ItemTemplate>
-        <asp:TextBox ID="TextBox1" runat="server" />
-        <asp:Button ID="Button1" runat="server" Text="Salvar" CommandName="Save" CommandArgument='<%# Container.DisplayIndex %>' />
-    </ItemTemplate>
-</asp:ListView>
+using System.Collections.Generic;: Importa namespaces necessários para usar coleções genéricas como List.
 
-______________________________________
-protected void ListView1_ItemCommand(object sender, ListViewCommandEventArgs e)
-{
-    if (e.CommandName == "Save")
-    {
-        // Encontre o índice do item
-        int index = Convert.ToInt32(e.CommandArgument);
+using System.Web.UI;: Importa namespaces para manipular páginas e controles Web Forms.
 
-        // Encontre o item correspondente
-        ListViewItem item = ListView1.Items[index];
+public partial class Default : Page: Declara a classe Default, que herda de Page. A palavra-chave partial permite que a classe seja dividida entre vários arquivos (por exemplo, Default.aspx e Default.aspx.cs).
 
-        // Encontre a TextBox dentro desse item
-        TextBox txt = (TextBox)item.FindControl("TextBox1");
+protected void Page_Load(object sender, EventArgs e): Manipulador do evento Page_Load, executado quando a página é carregada. sender é o objeto que gerou o evento, e e contém informações do evento.
 
-        if (txt != null)
-        {
-            // Capture o texto digitado
-            string textoDigitado = txt.Text;
+if (!IsPostBack): Verifica se a página não é um postback (ou seja, se é a primeira vez que a página está sendo carregada). Isso evita que a lista seja re-populada em cada postback.
 
-            // Agora você pode usar o valor capturado
-            // Exemplo: salvar no banco de dados, mostrar na tela, etc.
-            Response.Write("Valor capturado: " + textoDigitado);
-        }
-    }
-}
+var items = new List<ItemData>: Cria uma lista de ItemData com valores iniciais. ItemData é uma classe personalizada que contém uma propriedade InputValue.
+
+new ItemData("Valor Inicial 1"): Cria uma nova instância de ItemData com o valor inicial fornecido.
+
+lvItems.DataSource = items;: Define a lista items como a fonte de dados para o ListView.
+
+lvItems.DataBind();: Vincula os dados à ListView, fazendo com que os itens sejam exibidos conforme o template definido.
+
+protected void lvItems_ItemCommand(object sender, ListViewCommandEventArgs e): Manipulador de eventos para comandos do ListView. e contém informações sobre o comando executado.
+
+if (e.CommandName == "Salvar"): Verifica se o comando executado é "Salvar".
+
+TextBox txtInput = (TextBox)e.Item.FindControl("txtInput");: Encontra o TextBox dentro do item do ListView usando FindControl.
+
+if (txtInput != null): Verifica se o TextBox foi encontrado com sucesso.
+
+string valorInput = txtInput.Text;: Obtém o texto atual do TextBox.
+
+Response.Write($"Valor obtido do item {e.CommandArgument}: {valorInput}<br>");: Exibe o valor obtido na resposta HTML. e.CommandArgument fornece o índice do item, e valorInput é o texto do TextBox.
