@@ -1,0 +1,40 @@
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: red; 
+        color: #FFF; 
+        font-size: 8px; 
+        font-weight: bold;
+        padding: 1px 4px; 
+        border-radius: 50%;
+        text-align: center;
+        min-width: 12px; 
+        min-height: 12px; 
+        line-height: 1;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        border: 1px solid white; 
+
+-------------------------------------------------------------------------------------------
+
+        .modal-dialog{  ! deixar o modal responsivol 
+           min-width: 90vw;
+        }
+-------------------------------------------------------------------------------------------
+   <button type="button" class="btn btn-primary" onclick="redirectToPage()">Ir para outra página</button>   
+  
+  function redirectToPage() {
+          window.location.href = "outraPagina.aspx"; // Substitua pelo URL desejado
+      }
+-------------------------------------------------------------------------------------------
+
+protected void Page_Load(object sender, EventArgs e)
+{
+    // Simulando uma condição (exemplo: exibir modal se usuário não estiver logado)
+    bool abrirModal = !User.Identity.IsAuthenticated; // Condição para abrir o modal
+
+    if (abrirModal)
+    {
+        // Injetar um comando JavaScript para abrir o modal
+        ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", "$('#exampleModal').modal('show');", true);
+    }
+}
